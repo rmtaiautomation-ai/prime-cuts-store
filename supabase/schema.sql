@@ -17,6 +17,7 @@ CREATE TABLE profiles (
     full_name TEXT,
     phone TEXT,
     shipping_address TEXT,
+    cart_state JSONB DEFAULT '[]'::jsonb,
     is_admin BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -27,6 +28,10 @@ CREATE TABLE orders (
     user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
     total_amount NUMERIC NOT NULL,
     status TEXT DEFAULT 'Pending',
+    customer_name TEXT,
+    customer_email TEXT,
+    customer_phone TEXT,
+    shipping_address TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -49,6 +54,12 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 
+-- Function to check if current user is admin (bypasses RLS to avoid infinite recursion)
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+  SELECT is_admin FROM public.profiles WHERE id = auth.uid();
+$$ LANGUAGE sql SECURITY DEFINER;
+
 -- Products Policies
 -- Anyone can view the catalog (publicly readable)
 CREATE POLICY "Allow public read access on products" 
@@ -56,9 +67,7 @@ CREATE POLICY "Allow public read access on products"
 
 -- Admins can update products (inventory, price)
 CREATE POLICY "Admins can update products" 
-    ON products FOR UPDATE USING (
-        EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.is_admin = true)
-    );
+    ON products FOR UPDATE USING ( public.is_admin() );
 
 -- Profiles Policies
 -- Users can only view, insert, and update their own profile
@@ -73,9 +82,7 @@ CREATE POLICY "Users can insert own profile"
 
 -- Admins can view all profiles
 CREATE POLICY "Admins can view all profiles" 
-    ON profiles FOR SELECT USING (
-        EXISTS (SELECT 1 FROM profiles AS p WHERE p.id = auth.uid() AND p.is_admin = true)
-    );
+    ON profiles FOR SELECT USING ( public.is_admin() );
 
 -- Orders Policies
 -- Users can only view and create their own orders
@@ -87,15 +94,11 @@ CREATE POLICY "Users can create own orders"
 
 -- Admins can view all orders
 CREATE POLICY "Admins can view all orders" 
-    ON orders FOR SELECT USING (
-        EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.is_admin = true)
-    );
+    ON orders FOR SELECT USING ( public.is_admin() );
 
 -- Admins can update orders (e.g. status)
 CREATE POLICY "Admins can update orders" 
-    ON orders FOR UPDATE USING (
-        EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.is_admin = true)
-    );
+    ON orders FOR UPDATE USING ( public.is_admin() );
 
 -- Order Items Policies
 -- Users can view their own order items (checked via the orders table)
@@ -116,13 +119,14 @@ CREATE POLICY "Users can create own order items"
 
 -- Admins can view all order items
 CREATE POLICY "Admins can view all order items" 
-    ON order_items FOR SELECT USING (
-        EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.is_admin = true)
-    );
+    ON order_items FOR SELECT USING ( public.is_admin() );
 
 -- Guest Checkout Policies
 CREATE POLICY "Anyone can create guest orders" 
     ON orders FOR INSERT WITH CHECK (user_id IS NULL);
+
+CREATE POLICY "Anyone can view guest orders" 
+    ON orders FOR SELECT USING (user_id IS NULL);
 
 CREATE POLICY "Anyone can create guest order items" 
     ON order_items FOR INSERT WITH CHECK (

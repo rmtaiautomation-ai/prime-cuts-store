@@ -1,18 +1,42 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, ShoppingCart, DollarSign, Users } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 
-export const dynamic = 'force-dynamic';
+export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    products: 0,
+    orders: 0,
+    customers: 0,
+    revenue: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
-export default async function AdminDashboard() {
-  const { data: products } = await supabase.from('products').select('*');
-  const { data: orders } = await supabase.from('orders').select('*');
-  const { data: profiles } = await supabase.from('profiles').select('*');
+  useEffect(() => {
+    async function fetchStats() {
+      const [
+        { data: products },
+        { data: orders },
+        { data: profiles }
+      ] = await Promise.all([
+        supabase.from('products').select('*'),
+        supabase.from('orders').select('*'),
+        supabase.from('profiles').select('*')
+      ]);
 
-  const totalProducts = products?.length || 0;
-  const totalOrders = orders?.length || 0;
-  const totalCustomers = profiles?.length || 0;
-  const totalRevenue = orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
+      setStats({
+        products: products?.length || 0,
+        orders: orders?.length || 0,
+        customers: profiles?.length || 0,
+        revenue: orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0,
+      });
+      setIsLoading(false);
+    }
+    
+    fetchStats();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -28,7 +52,9 @@ export default async function AdminDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">₱{totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-primary">
+              {isLoading ? "..." : `₱${stats.revenue.toLocaleString()}`}
+            </div>
             <p className="text-xs text-muted-foreground">Lifetime revenue</p>
           </CardContent>
         </Card>
@@ -38,7 +64,7 @@ export default async function AdminDashboard() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalOrders}</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : stats.orders}</div>
             <p className="text-xs text-muted-foreground">Orders placed</p>
           </CardContent>
         </Card>
@@ -48,7 +74,7 @@ export default async function AdminDashboard() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalProducts}</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : stats.products}</div>
             <p className="text-xs text-muted-foreground">Catalog items available</p>
           </CardContent>
         </Card>
@@ -58,7 +84,7 @@ export default async function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalCustomers}</div>
+            <div className="text-2xl font-bold">{isLoading ? "..." : stats.customers}</div>
             <p className="text-xs text-muted-foreground">Registered Sukis</p>
           </CardContent>
         </Card>

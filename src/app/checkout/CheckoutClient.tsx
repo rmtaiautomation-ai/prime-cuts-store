@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Check, Info, ShieldCheck, ChevronRight } from "lucide-react";
+import { Check, Info, ShieldCheck, ChevronRight, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase/client";
@@ -17,10 +17,62 @@ export function CheckoutClient() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [address, setAddress] = useState("");
+  const [apartment, setApartment] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [city, setCity] = useState("");
+  const [phone, setPhone] = useState("");
+
   const [tipPercentage, setTipPercentage] = useState<number | null>(null);
   const [customTip, setCustomTip] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("paymongo");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUserId(session.user.id);
+        setEmail(session.user.email || "");
+        
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+
+        if (profile) {
+          if (profile.full_name) {
+            const parts = profile.full_name.split(" ");
+            setFirstName(parts[0] || "");
+            setLastName(parts.slice(1).join(" ") || "");
+          }
+          if (profile.phone) setPhone(profile.phone);
+          if (profile.shipping_address) {
+            // Attempt to parse existing address back into fields
+            const parts = profile.shipping_address.split(", ");
+            if (parts.length >= 3) {
+              setAddress(parts[0]);
+              if (parts.length === 4) {
+                setApartment(parts[1]);
+                setCity(parts[2]);
+                setPostalCode(parts[3]);
+              } else {
+                setCity(parts[1]);
+                setPostalCode(parts[2]);
+              }
+            } else {
+              setAddress(profile.shipping_address);
+            }
+          }
+        }
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const subtotal = getTotalPrice();
   
@@ -56,7 +108,11 @@ export function CheckoutClient() {
         .insert({
           total_amount: finalTotal,
           status: 'Pending',
-          // user_id is left null for Guest Checkout
+          customer_email: email,
+          customer_name: `${firstName} ${lastName}`.trim(),
+          customer_phone: phone,
+          shipping_address: `${address}, ${apartment ? apartment + ', ' : ''}${city}, ${postalCode}`,
+          user_id: userId || null,
         })
         .select('id')
         .single();
@@ -77,9 +133,17 @@ export function CheckoutClient() {
 
       if (itemsError) throw itemsError;
 
-      toast.success("Order placed successfully! We will contact you soon.");
+      // 3. Update User Profile if logged in
+      if (userId) {
+        await supabase.from('profiles').update({
+          phone: phone,
+          shipping_address: `${address}, ${apartment ? apartment + ', ' : ''}${city}, ${postalCode}`
+        }).eq('id', userId);
+      }
+
+      toast.success("Order placed successfully!");
       clearCart();
-      router.push("/");
+      router.push(`/checkout/success?order_id=${orderData.id}`);
     } catch (error) {
       console.error("Error placing order:", error);
       toast.error("There was a problem placing your order. Please try again.");
@@ -94,6 +158,14 @@ export function CheckoutClient() {
       <div className="w-full md:w-3/5 lg:w-[55%] bg-white px-4 py-8 md:px-12 md:py-12 flex justify-center md:justify-end border-r border-gray-200">
         <div className="w-full max-w-xl space-y-10">
           
+          {/* Header Logo (Aligned with form) */}
+          <div className="pb-2">
+            <Link href="/cart" className="inline-flex items-center gap-2 text-[#001a41] hover:opacity-80 transition-opacity font-black uppercase tracking-widest text-2xl md:text-3xl">
+              <ArrowLeft className="h-6 w-6 md:hidden" />
+              PrimeCuts PH
+            </Link>
+          </div>
+
           {/* Breadcrumb */}
           <nav className="hidden md:flex text-sm text-gray-500 mb-6 items-center gap-2">
             <Link href="/cart" className="hover:text-primary transition-colors">Cart</Link>
@@ -135,21 +207,21 @@ export function CheckoutClient() {
                 <option>Philippines</option>
               </select>
               <div className="grid grid-cols-2 gap-3">
-                <Input placeholder="First name" required className="h-12 border-gray-300 rounded-md" />
-                <Input placeholder="Last name" required className="h-12 border-gray-300 rounded-md" />
+                <Input placeholder="First name" required value={firstName} onChange={e => setFirstName(e.target.value)} className="h-12 border-gray-300 rounded-md" />
+                <Input placeholder="Last name" required value={lastName} onChange={e => setLastName(e.target.value)} className="h-12 border-gray-300 rounded-md" />
               </div>
-              <Input placeholder="Address" required className="h-12 border-gray-300 rounded-md" />
-              <Input placeholder="Apartment, suite, etc. (optional)" className="h-12 border-gray-300 rounded-md" />
+              <Input placeholder="Address" required value={address} onChange={e => setAddress(e.target.value)} className="h-12 border-gray-300 rounded-md" />
+              <Input placeholder="Apartment, suite, etc. (optional)" value={apartment} onChange={e => setApartment(e.target.value)} className="h-12 border-gray-300 rounded-md" />
               <div className="grid grid-cols-2 gap-3">
-                <Input placeholder="Postal code" required className="h-12 border-gray-300 rounded-md" />
-                <Input placeholder="City" required className="h-12 border-gray-300 rounded-md" />
+                <Input placeholder="Postal code" required value={postalCode} onChange={e => setPostalCode(e.target.value)} className="h-12 border-gray-300 rounded-md" />
+                <Input placeholder="City" required value={city} onChange={e => setCity(e.target.value)} className="h-12 border-gray-300 rounded-md" />
               </div>
               <select className="w-full h-12 border border-gray-300 rounded-md px-3 text-gray-700 bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none">
                 <option>Metro Manila</option>
                 <option>Cebu</option>
                 <option>Davao</option>
               </select>
-              <Input placeholder="Phone" type="tel" required className="h-12 border-gray-300 rounded-md" />
+              <Input placeholder="Phone" type="tel" required value={phone} onChange={e => setPhone(e.target.value)} className="h-12 border-gray-300 rounded-md" />
             </div>
           </section>
 

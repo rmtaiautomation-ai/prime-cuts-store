@@ -2,14 +2,76 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Search, User } from "lucide-react";
+import { Search, User, LogOut } from "lucide-react";
 import { CartSheet } from "@/components/CartSheet";
+import { supabase } from "@/lib/supabase/client";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
+import { useCartStore } from "@/lib/store/useCartStore";
 
 export function Navbar() {
+  const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [firstName, setFirstName] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check initial session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const fullName = session.user.user_metadata?.full_name || session.user.email;
+        if (fullName) {
+          setFirstName(fullName.split(" ")[0]);
+        }
+        
+        // Restore cart from DB
+        const { data } = await supabase.from('profiles').select('cart_state').eq('id', session.user.id).single();
+        if (data?.cart_state && Array.isArray(data.cart_state) && data.cart_state.length > 0) {
+           useCartStore.getState().setCart(data.cart_state);
+        }
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const fullName = session.user.user_metadata?.full_name || session.user.email;
+        if (fullName) {
+          setFirstName(fullName.split(" ")[0]);
+        }
+        
+        // When logging in, load remote cart. Or if remote cart is empty, save local cart.
+        const { data } = await supabase.from('profiles').select('cart_state').eq('id', session.user.id).single();
+        if (data?.cart_state && Array.isArray(data.cart_state) && data.cart_state.length > 0) {
+           useCartStore.getState().setCart(data.cart_state);
+        } else {
+           const localCart = useCartStore.getState().items;
+           if (localCart.length > 0) {
+             await supabase.from('profiles').update({ cart_state: localCart }).eq('id', session.user.id);
+           }
+        }
+      } else {
+        setFirstName(null);
+        // Clear cart on logout
+        useCartStore.getState().clearCart();
+      }
+    });
+
+    // Subscribe to local cart changes to sync back to DB
+    const unsubscribeCart = useCartStore.subscribe((state) => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          supabase.from('profiles').update({ cart_state: state.items }).eq('id', session.user.id).then();
+        }
+      });
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      unsubscribeCart();
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,6 +92,8 @@ export function Navbar() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
+  if (pathname === "/checkout") return null;
 
   return (
     <nav className={`sticky top-0 z-50 w-full border-b border-border bg-[#001a41] shadow-sm transition-transform duration-300 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
@@ -54,14 +118,39 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
-            <Button className="hidden sm:flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-5 h-10" render={<Link href="/account" />}>
-              <User className="h-4 w-4" />
-              <span className="hidden md:inline">Log in</span>
-            </Button>
-            
             <div className="text-white">
               <CartSheet />
             </div>
+
+            {firstName ? (
+              <div className="relative group">
+                <Button asChild className="hidden sm:flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-5 h-10">
+                  <Link href="/account">
+                    <span className="hidden md:inline">My Account</span>
+                  </Link>
+                </Button>
+                <div className="absolute right-0 top-full pt-2 hidden group-hover:block w-32 z-50">
+                  <div className="bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden">
+                    <button 
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                        window.location.href = "/login";
+                      }} 
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4 text-red-500" />
+                      Log out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Button asChild className="hidden sm:flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-5 h-10">
+                <Link href="/login">
+                  <span className="hidden md:inline">Log in</span>
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>

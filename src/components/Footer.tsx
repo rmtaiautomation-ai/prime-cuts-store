@@ -1,15 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChevronUp, Gift } from "lucide-react";
 import { FaFacebook, FaInstagram } from "react-icons/fa";
 
 export function Footer() {
+  const pathname = usePathname();
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  if (pathname === "/checkout") return null;
 
   return (
     <footer className="w-full bg-white border-t border-border mt-auto">

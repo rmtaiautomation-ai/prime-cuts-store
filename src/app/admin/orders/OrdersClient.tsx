@@ -55,8 +55,8 @@ export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
             <TableRow key={order.id}>
               <TableCell className="font-mono text-xs">{order.id.split('-')[0]}</TableCell>
               <TableCell>
-                <div className="font-medium">{order.profiles?.full_name || 'Guest'}</div>
-                <div className="text-xs text-muted-foreground">{order.profiles?.shipping_address || 'No Address'}</div>
+                <div className="font-medium">{order.profiles?.full_name || order.customer_name || 'Guest'}</div>
+                <div className="text-xs text-muted-foreground">{order.profiles?.shipping_address || order.shipping_address || 'No Address'}</div>
               </TableCell>
               <TableCell className="font-bold">₱{Number(order.total_amount).toLocaleString()}</TableCell>
               <TableCell className="text-muted-foreground text-sm">{new Date(order.created_at).toLocaleDateString()}</TableCell>

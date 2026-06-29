@@ -1,23 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
-import { ShoppingCart } from "lucide-react";
+import Link from "next/link";
+import { ShoppingCart, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Product } from "@/lib/mock-data";
 import { useCartStore } from "@/lib/store/useCartStore";
-import { toast } from "sonner";
 
 export function ProductCard({ product }: { product: Product }) {
   const addItem = useCartStore((state) => state.addItem);
+  const getTotalItems = useCartStore((state) => state.getTotalItems);
+  const totalItems = getTotalItems();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAddToCart = () => {
     addItem(product, 1);
-    toast.success(`${product.name} added to cart!`, {
-      description: "You can view your items in the cart drawer.",
-      position: "top-center"
-    });
+    setIsModalOpen(true);
   };
 
   const formattedPrice = new Intl.NumberFormat("en-PH", {
@@ -88,6 +90,62 @@ export function ProductCard({ product }: { product: Product }) {
           {product.stockQuantity === 0 ? "Out of Stock" : "Add to Cart"}
         </Button>
       </CardFooter>
+
+      {/* Centered Minimalist Modal for Add to Cart Success (Matching Image) */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[380px] bg-white border-0 shadow-2xl p-0 rounded-none overflow-hidden [&>button]:right-4 [&>button]:top-4">
+          <div className="flex items-center px-5 py-4 border-b border-gray-100">
+            <Check className="h-4 w-4 mr-2 text-black" strokeWidth={3} />
+            <span className="text-[11px] font-medium tracking-widest text-black uppercase">
+              Item added to your cart
+            </span>
+          </div>
+          
+          <div className="flex gap-4 p-5">
+            <div className="relative w-20 h-20 border border-gray-100 bg-white flex-shrink-0">
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                fill
+                className="object-cover p-1"
+              />
+            </div>
+            <div className="flex flex-col pt-1">
+              <h4 className="text-sm tracking-wide text-black uppercase leading-tight">
+                {product.name}
+              </h4>
+              <p className="text-xs text-gray-500 mt-2">
+                Category: {product.category.toUpperCase()}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Price: {formattedPrice}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2.5 p-5 pt-2">
+            <Button 
+              variant="outline" 
+              render={<Link href="/cart" />} 
+              className="w-full rounded-none border-black text-black hover:bg-gray-50 h-12 font-normal text-sm"
+            >
+              View cart ({totalItems})
+            </Button>
+            <Button 
+              render={<Link href="/checkout" />} 
+              className="w-full rounded-none bg-[#111] hover:bg-black text-white h-12 font-normal text-sm"
+            >
+              Check out
+            </Button>
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="w-full mt-1 text-sm underline text-gray-600 hover:text-black transition-colors py-2"
+            >
+              Continue shopping
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
