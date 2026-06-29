@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Search, User, LogOut, Menu, X } from "lucide-react";
+import { Search, User, LogOut, Menu, X, Settings } from "lucide-react";
 import { CartSheet } from "@/components/CartSheet";
 import { supabase } from "@/lib/supabase/client";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
@@ -155,13 +155,15 @@ export function Navbar() {
 
           {/* Mobile View */}
           <div className="flex sm:hidden items-center gap-2">
+            <div className="text-white">
+              <CartSheet />
+            </div>
             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white p-2">
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              <Settings className={`h-6 w-6 transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-90' : ''}`} />
             </button>
             
             {isMobileMenuOpen && (
               <div className="absolute top-[80px] right-4 w-48 bg-white rounded-md shadow-xl border border-gray-200 py-1 flex flex-col z-50">
-                <CartSheet mobile />
                 {firstName ? (
                   <>
                     <Link href="/account" className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 border-b border-gray-100" onClick={() => setIsMobileMenuOpen(false)}>
