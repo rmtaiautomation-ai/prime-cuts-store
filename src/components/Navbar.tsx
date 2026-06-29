@@ -53,8 +53,10 @@ export function Navbar() {
         }
       } else {
         setFirstName(null);
-        // Clear cart on logout
-        useCartStore.getState().clearCart();
+        // Clear cart ONLY on explicit logout, not on initial load for guests
+        if (_event === 'SIGNED_OUT') {
+          useCartStore.getState().clearCart();
+        }
       }
     });
 
@@ -124,8 +126,8 @@ export function Navbar() {
 
             {firstName ? (
               <div className="relative group">
-                <Button render={<Link href="/account" />} className="hidden sm:flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-5 h-10">
-                    <span className="hidden md:inline">My Account</span>
+                <Button render={<Link href="/account" />} className="flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-4 h-9 text-sm">
+                    My Account
                 </Button>
                 <div className="absolute right-0 top-full pt-2 hidden group-hover:block w-32 z-50">
                   <div className="bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden">
@@ -143,8 +145,8 @@ export function Navbar() {
                 </div>
               </div>
             ) : (
-              <Button render={<Link href="/login" />} className="hidden sm:flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-5 h-10">
-                  <span className="hidden md:inline">Log in</span>
+              <Button render={<Link href="/login" />} className="flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-4 h-9 text-sm">
+                  Log in
               </Button>
             )}
           </div>
