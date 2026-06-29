@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Search, User, LogOut } from "lucide-react";
+import { Search, User, LogOut, Menu, X } from "lucide-react";
 import { CartSheet } from "@/components/CartSheet";
 import { supabase } from "@/lib/supabase/client";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
@@ -15,6 +15,7 @@ export function Navbar() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [firstName, setFirstName] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Check initial session
@@ -119,7 +120,8 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-4">
+          {/* Desktop View */}
+          <div className="hidden sm:flex items-center gap-4">
             <div className="text-white">
               <CartSheet />
             </div>
@@ -148,6 +150,43 @@ export function Navbar() {
               <Button render={<Link href="/login" />} className="flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-4 h-9 text-sm">
                   Log in
               </Button>
+            )}
+          </div>
+
+          {/* Mobile View */}
+          <div className="flex sm:hidden items-center gap-2">
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white p-2">
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+            
+            {isMobileMenuOpen && (
+              <div className="absolute top-[80px] right-4 w-48 bg-white rounded-md shadow-xl border border-gray-200 py-1 flex flex-col z-50">
+                <CartSheet mobile />
+                {firstName ? (
+                  <>
+                    <Link href="/account" className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 border-b border-gray-100" onClick={() => setIsMobileMenuOpen(false)}>
+                      <User className="h-4 w-4 text-[#001a41]" />
+                      My Account
+                    </Link>
+                    <button 
+                      onClick={async () => {
+                        setIsMobileMenuOpen(false);
+                        await supabase.auth.signOut();
+                        window.location.href = "/login";
+                      }} 
+                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4 text-red-500" />
+                      Log out
+                    </button>
+                  </>
+                ) : (
+                  <Link href="/login" className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
+                    <User className="h-4 w-4 text-[#001a41]" />
+                    Log in
+                  </Link>
+                )}
+              </div>
             )}
           </div>
         </div>

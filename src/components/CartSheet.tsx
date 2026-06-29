@@ -7,7 +7,7 @@ import { useCartStore } from "@/lib/store/useCartStore";
 import Image from "next/image";
 import Link from "next/link";
 
-export function CartSheet() {
+export function CartSheet({ mobile = false }: { mobile?: boolean }) {
   const { items, updateQuantity, removeItem, getTotalItems, getTotalPrice } = useCartStore();
 
   const totalItems = getTotalItems();
@@ -23,12 +23,19 @@ export function CartSheet() {
     <Sheet>
       <SheetTrigger 
         render={
-          <Button className="flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-5 h-10">
-            <ShoppingCart className="h-4 w-4" />
-            <span>
-              {totalItems > 0 ? `₱${totalPrice.toLocaleString()} (${totalItems})` : "Cart"}
-            </span>
-          </Button>
+          mobile ? (
+            <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 border-b border-gray-100">
+              <ShoppingCart className="h-4 w-4 text-[#001a41]" />
+              My Cart {totalItems > 0 && `(${totalItems})`}
+            </button>
+          ) : (
+            <Button className="flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-5 h-10">
+              <ShoppingCart className="h-4 w-4" />
+              <span>
+                {totalItems > 0 ? `₱${totalPrice.toLocaleString()} (${totalItems})` : "Cart"}
+              </span>
+            </Button>
+          )
         }
       />
       <SheetContent className="border-border w-full sm:max-w-lg flex flex-col h-full bg-background">
