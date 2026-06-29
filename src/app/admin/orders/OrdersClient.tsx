@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/lib/supabase/client";
@@ -9,6 +9,26 @@ import { Badge } from "@/components/ui/badge";
 
 export function OrdersClient({ initialOrders }: { initialOrders: any[] }) {
   const [orders, setOrders] = useState(initialOrders);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchAuthenticatedOrders() {
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*, profiles(full_name, phone, shipping_address)')
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        if (data) setOrders(data);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchAuthenticatedOrders();
+  }, []);
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
