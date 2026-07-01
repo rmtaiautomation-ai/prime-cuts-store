@@ -2,9 +2,7 @@
 
 > A high-performance, highly secure, and automated digital storefront built specifically for premium meat suppliers. 
 
-**🔴 Live Demo:** [Insert URL Here] (e.g. primecuts.vercel.app)
-
-![PrimeCuts Banner](https://via.placeholder.com/1200x400?text=PrimeCuts+E-Commerce+Platform)
+**🔴 Live Demo:** [https://prime-cuts-store.vercel.app/]
 
 ## 📊 The Business Value
 Most boutique food suppliers rely on manual, error-prone processes: taking orders through Instagram DMs, tracking inventory in Excel, and manually messaging customers for delivery updates. 
