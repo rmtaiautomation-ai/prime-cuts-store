@@ -113,6 +113,7 @@ export function CartSheet({ mobile = false }: { mobile?: boolean }) {
                 <span className="font-bold text-2xl text-primary">{formattedTotal}</span>
               </div>
               <SheetClose 
+                nativeButton={false}
                 render={
                   <Button render={<Link href="/cart" />} className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 text-lg">
                     View Cart
