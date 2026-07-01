@@ -17,6 +17,18 @@ export function Navbar() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [firstName, setFirstName] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (searchQuery.trim()) {
+        router.push(`/?search=${encodeURIComponent(searchQuery.trim())}`);
+      } else {
+        router.push(`/`);
+      }
+    }
+  };
 
   useEffect(() => {
     // Check initial session
@@ -116,6 +128,9 @@ export function Navbar() {
               <input 
                 type="text"
                 placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch}
                 className="w-full bg-[#112a52] text-white placeholder-gray-400 border border-white/20 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:border-white transition-colors"
               />
             </div>

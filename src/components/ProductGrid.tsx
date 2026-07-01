@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { ProductCard } from "./ProductCard";
 import type { Product } from "@/lib/mock-data";
 import { Search, PackageX } from "lucide-react";
@@ -8,8 +9,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export function ProductGrid({ products }: { products: Product[] }) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [selectedCategory, setSelectedCategory] = useState("All");
+
+  // Sync state if URL changes
+  useEffect(() => {
+    if (searchParams.has("search")) {
+      setSearchQuery(searchParams.get("search") || "");
+    }
+  }, [searchParams]);
 
   // Dynamically extract all unique categories from the available products
   const categories = useMemo(() => {

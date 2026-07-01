@@ -5,6 +5,7 @@ import { ProductGrid } from "@/components/ProductGrid";
 import { MOCK_PRODUCTS } from "@/lib/mock-data";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { supabase } from "@/lib/supabase/client";
+import { Suspense } from "react";
 
 export const dynamic = 'force-dynamic';
 
@@ -72,7 +73,9 @@ export default async function Home() {
               <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
-          <ProductGrid products={products} />
+          <Suspense fallback={<div className="h-64 flex items-center justify-center">Loading products...</div>}>
+            <ProductGrid products={products} />
+          </Suspense>
         </div>
       </section>
 
