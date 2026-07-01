@@ -2,6 +2,8 @@
 
 > A high-performance, highly secure, and automated digital storefront built specifically for premium meat suppliers. 
 
+**🔴 Live Demo:** [Insert URL Here] (e.g. primecuts.vercel.app)
+
 ![PrimeCuts Banner](https://via.placeholder.com/1200x400?text=PrimeCuts+E-Commerce+Platform)
 
 ## 📊 The Business Value
@@ -36,11 +38,13 @@ Most boutique food suppliers rely on manual, error-prone processes: taking order
 
 This platform was built using modern, edge-ready web technologies to ensure maximum performance and security:
 
-* **Framework:** [Next.js 14](https://nextjs.org/) (App Router & Server Actions)
-* **Styling:** [Tailwind CSS](https://tailwindcss.com/) & [Shadcn UI](https://ui.shadcn.com/)
-* **Database & Auth:** [Supabase](https://supabase.com/) (PostgreSQL) with Row Level Security (RLS)
-* **Transactional Emails:** [Resend](https://resend.com/)
-* **Language:** TypeScript (Strict Mode)
+* **Next.js 14** - React Framework (App Router, Server Actions)
+* **React** - UI Library
+* **Tailwind CSS** - Utility-first styling
+* **Shadcn UI** - Reusable UI components
+* **Supabase** - PostgreSQL Database, Authentication, and Row Level Security (RLS)
+* **Resend** - Transactional Email API
+* **TypeScript** - Strict type checking
 
 ### Database Optimizations
 To support the anti-spam checkout protections without sacrificing speed, a composite database index was implemented:
