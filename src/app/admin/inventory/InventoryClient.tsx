@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { AddProductModal } from "./AddProductModal";
 
 export function InventoryClient({ initialProducts }: { initialProducts: any[] }) {
   const [products, setProducts] = useState(initialProducts);
@@ -37,7 +38,16 @@ export function InventoryClient({ initialProducts }: { initialProducts: any[] })
   };
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-[#001a41]">Inventory</h2>
+          <p className="text-muted-foreground">Manage your product catalog and stock levels.</p>
+        </div>
+        <AddProductModal />
+      </div>
+      
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -92,6 +102,7 @@ export function InventoryClient({ initialProducts }: { initialProducts: any[] })
           ))}
         </TableBody>
       </Table>
+    </div>
     </div>
   );
 }

@@ -37,6 +37,41 @@ async function getAdminSupabase() {
   return supabase;
 }
 
+export async function addProduct(productData: {
+  name: string;
+  description: string;
+  price: number;
+  stock_quantity: number;
+  category: string;
+  imageUrl: string;
+}) {
+  try {
+    const supabase = await getAdminSupabase();
+
+    const { error } = await supabase
+      .from("products")
+      .insert([{
+        name: productData.name,
+        description: productData.description,
+        price: productData.price,
+        stock_quantity: productData.stock_quantity,
+        category: productData.category,
+        imageUrl: productData.imageUrl,
+        is_active: true
+      }]);
+
+    if (error) throw error;
+
+    revalidatePath("/admin/inventory");
+    revalidatePath("/");
+    
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error adding product:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 export async function updateOrderStatus(orderId: string, status: string) {
   try {
     const supabase = await getAdminSupabase();
