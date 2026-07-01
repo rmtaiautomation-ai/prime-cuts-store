@@ -44,6 +44,8 @@ export default async function CustomersPage() {
                   <TableCell>
                     {profile.is_admin ? (
                       <Badge variant="default">Admin</Badge>
+                    ) : Number(profile.lifetimeSpend || 0) >= 10000 ? (
+                      <Badge className="bg-amber-500 hover:bg-amber-600 text-white">VIP Customer</Badge>
                     ) : (
                       <Badge variant="secondary">Customer</Badge>
                     )}

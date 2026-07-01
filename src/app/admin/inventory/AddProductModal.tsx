@@ -99,11 +99,11 @@ export function AddProductModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-[#001a41] hover:bg-[#002a66] text-white flex items-center gap-2">
+      <DialogTrigger>
+        <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 bg-[#001a41] hover:bg-[#002a66] text-white gap-2">
           <Plus className="w-4 h-4" />
           Add New Product
-        </Button>
+        </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -155,9 +155,9 @@ export function AddProductModal() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Category</label>
-              <Select value={formData.category} onValueChange={(val) => setFormData({...formData, category: val})} required>
+              <Select value={formData.category} onValueChange={(val) => setFormData({...formData, category: val || ""})} required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map(cat => (

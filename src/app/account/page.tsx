@@ -44,6 +44,10 @@ export default function AccountPage() {
         await supabase.from("profiles").insert(newProfile);
         setProfile(newProfile);
       } else {
+        if (profileData?.is_admin) {
+          router.push("/admin");
+          return;
+        }
         setProfile(profileData);
       }
 
