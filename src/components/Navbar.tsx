@@ -23,7 +23,7 @@ export function Navbar() {
     if (e.key === "Enter") {
       e.preventDefault();
       if (searchQuery.trim()) {
-        router.push(`/?search=${encodeURIComponent(searchQuery.trim())}`);
+        router.push(`/?search=${encodeURIComponent(searchQuery.trim())}#products`);
       } else {
         router.push(`/`);
       }

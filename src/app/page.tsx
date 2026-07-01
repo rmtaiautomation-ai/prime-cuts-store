@@ -62,7 +62,7 @@ export default async function Home() {
       </main>
 
       {/* Featured Products Section */}
-      <section className="bg-background py-12 md:py-20">
+      <section id="products" className="bg-background py-12 md:py-20">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-6 border-b border-border pb-4">
             <div className="space-y-1">
