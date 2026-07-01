@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Search, User, LogOut, Menu, X, Settings } from "lucide-react";
 import { CartSheet } from "@/components/CartSheet";
@@ -12,6 +12,7 @@ import { useCartStore } from "@/lib/store/useCartStore";
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [firstName, setFirstName] = useState<string | null>(null);
@@ -128,7 +129,7 @@ export function Navbar() {
 
             {firstName ? (
               <div className="relative group">
-                <Button render={<Link href="/account" />} className="flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-4 h-9 text-sm">
+                <Button render={<Link href="/account" />} nativeButton={false} className="flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-4 h-9 text-sm">
                     My Account
                 </Button>
                 <div className="absolute right-0 top-full pt-2 hidden group-hover:block w-32 z-50">
@@ -136,7 +137,8 @@ export function Navbar() {
                     <button 
                       onClick={async () => {
                         await supabase.auth.signOut();
-                        window.location.href = "/login";
+                        router.push("/login");
+                        router.refresh();
                       }} 
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
@@ -147,7 +149,7 @@ export function Navbar() {
                 </div>
               </div>
             ) : (
-              <Button render={<Link href="/login" />} className="flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-4 h-9 text-sm">
+              <Button render={<Link href="/login" />} nativeButton={false} className="flex items-center gap-2 bg-white text-[#001a41] hover:bg-white/90 font-bold rounded-full px-4 h-9 text-sm">
                   Log in
               </Button>
             )}
@@ -174,7 +176,8 @@ export function Navbar() {
                       onClick={async () => {
                         setIsMobileMenuOpen(false);
                         await supabase.auth.signOut();
-                        window.location.href = "/login";
+                        router.push("/login");
+                        router.refresh();
                       }} 
                       className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >

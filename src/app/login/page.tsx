@@ -207,6 +207,7 @@ export default function LoginPage() {
                   type="button"
                   variant="outline"
                   render={<Link href="/register" />}
+                  nativeButton={false}
                   className="w-full flex justify-center py-2 px-4 border border-[#001a41] text-[#001a41] rounded-md shadow-sm text-sm font-bold bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#001a41] h-12"
                 >
                   Create an Account

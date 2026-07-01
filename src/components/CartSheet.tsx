@@ -6,12 +6,19 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
 import { useCartStore } from "@/lib/store/useCartStore";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export function CartSheet({ mobile = false }: { mobile?: boolean }) {
+  const [isMounted, setIsMounted] = useState(false);
   const { items, updateQuantity, removeItem, getTotalItems, getTotalPrice } = useCartStore();
 
-  const totalItems = getTotalItems();
-  const totalPrice = getTotalPrice();
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const totalItems = isMounted ? getTotalItems() : 0;
+  const totalPrice = isMounted ? getTotalPrice() : 0;
+  const displayItems = isMounted ? items : [];
 
   const formattedTotal = new Intl.NumberFormat("en-PH", {
     style: "currency",
@@ -43,7 +50,7 @@ export function CartSheet({ mobile = false }: { mobile?: boolean }) {
           <SheetTitle className="text-foreground">Your Cart ({totalItems})</SheetTitle>
         </SheetHeader>
         
-        {items.length === 0 ? (
+        {displayItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center flex-grow space-y-4 text-muted-foreground">
             <ShoppingCart className="h-12 w-12 opacity-20" />
             <p>Your cart is empty.</p>
@@ -51,7 +58,7 @@ export function CartSheet({ mobile = false }: { mobile?: boolean }) {
         ) : (
           <>
             <div className="flex-1 overflow-y-auto py-6 space-y-4 pr-2">
-              {items.map((item) => (
+              {displayItems.map((item) => (
                 <div key={item.product.id} className="flex gap-4 border-b border-border pb-4">
                   <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0 bg-muted">
                     <Image 

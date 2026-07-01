@@ -11,6 +11,7 @@ import { Check, Info, ShieldCheck, ChevronRight, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase/client";
+import { createSecureOrder } from "@/app/actions/order";
 
 export function CheckoutClient() {
   const { items, getTotalPrice, clearCart } = useCartStore();
@@ -102,38 +103,25 @@ export function CheckoutClient() {
     setIsProcessing(true);
     
     try {
-      // 1. Create the Order
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          total_amount: finalTotal,
-          status: 'Pending',
-          customer_email: email,
-          customer_name: `${firstName} ${lastName}`.trim(),
-          customer_phone: phone,
-          shipping_address: `${address}, ${apartment ? apartment + ', ' : ''}${city}, ${postalCode}`,
-          user_id: userId || null,
-        })
-        .select('id')
-        .single();
+      const orderData = {
+        items: items.map(item => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+        })),
+        customerEmail: email,
+        customerName: `${firstName} ${lastName}`.trim(),
+        customerPhone: phone,
+        shippingAddress: `${address}, ${apartment ? apartment + ', ' : ''}${city}, ${postalCode}`,
+        tipAmount: tipAmount,
+      };
 
-      if (orderError) throw orderError;
+      const result = await createSecureOrder(orderData);
 
-      // 2. Create the Order Items
-      const orderItems = items.map(item => ({
-        order_id: orderData.id,
-        product_id: item.product.id,
-        quantity: item.quantity,
-        price_at_purchase: item.product.price
-      }));
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create order");
+      }
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      // 3. Update User Profile if logged in
+      // Update User Profile if logged in
       if (userId) {
         await supabase.from('profiles').update({
           phone: phone,
@@ -143,7 +131,7 @@ export function CheckoutClient() {
 
       toast.success("Order placed successfully!");
       clearCart();
-      router.push(`/checkout/success?order_id=${orderData.id}`);
+      router.push(`/checkout/success?order_id=${result.orderId}`);
     } catch (error) {
       console.error("Error placing order:", error);
       toast.error("There was a problem placing your order. Please try again.");
@@ -151,6 +139,7 @@ export function CheckoutClient() {
       setIsProcessing(false);
     }
   };
+
 
   return (
     <form onSubmit={handlePayNow} className="flex flex-col-reverse md:flex-row min-h-screen">

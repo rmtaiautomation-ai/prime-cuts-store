@@ -2,15 +2,32 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { LayoutDashboard, Package, ShoppingCart, Users, ArrowLeft } from "lucide-react";
 import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  // TODO: Replace with real @supabase/ssr cookie check
-  const isAuthenticated = true; // Temporary bypass for local testing
-  const isAdmin = true; // Temporary bypass for local testing
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!isAuthenticated || !isAdmin) {
+  if (!user) {
     redirect("/login");
   }
+
+  // Check if user is admin
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .single();
+
+  console.log("Admin access check for user:", user.id);
+  console.log("Profile fetched:", profile);
+  console.log("Profile error:", profileError);
+
+  if (!profile?.is_admin) {
+    console.log("Redirecting to home because user is not admin.");
+    redirect("/"); // Redirect non-admins to home
+  }
+
   return (
     <div className="min-h-screen bg-muted/20 flex flex-col md:flex-row font-sans text-foreground selection:bg-primary/30">
       {/* Sidebar */}

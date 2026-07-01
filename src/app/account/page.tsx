@@ -43,6 +43,7 @@ export default function AccountPage() {
         
         await supabase.from("profiles").insert(newProfile);
         setProfile(newProfile);
+      } else {
         setProfile(profileData);
       }
 

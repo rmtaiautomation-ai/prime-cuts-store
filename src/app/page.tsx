@@ -12,7 +12,7 @@ export default async function Home() {
   let products = MOCK_PRODUCTS;
 
   try {
-    const { data: dbProducts, error } = await supabase.from("products").select("*");
+    const { data: dbProducts, error } = await supabase.from("products").select("*").eq("is_active", true);
     if (!error && dbProducts && dbProducts.length > 0) {
       products = dbProducts.map((p) => ({
         id: p.id,

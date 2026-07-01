@@ -1,10 +1,11 @@
-import { supabase } from "@/lib/supabase/client";
+import { getAdminOrders } from "@/app/actions/admin";
 import { OrdersClient } from "./OrdersClient";
 
 export const dynamic = 'force-dynamic';
 
 export default async function OrdersPage() {
-  const { data: orders } = await supabase.from('orders').select('*, profiles(full_name, phone, shipping_address)').order('created_at', { ascending: false });
+  const result = await getAdminOrders();
+  const orders = result.success ? result.orders : [];
 
   return (
     <div className="space-y-6">

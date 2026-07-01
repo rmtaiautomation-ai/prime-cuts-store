@@ -41,20 +41,24 @@ export function ProductCard({ product }: { product: Product }) {
             {product.category}
           </Badge>
         </div>
-        <Image
+        <Link href={`/product/${product.id}`}>
+          <Image
           src={product.imageUrl}
           alt={product.name}
           fill
           className="object-cover transition-transform duration-700 ease-in-out group-hover:scale-110 opacity-95 group-hover:opacity-100"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        </Link>
       </div>
       
       <CardHeader className="p-5 pb-2">
-        <h3 className="font-heading text-lg font-bold leading-tight tracking-tight text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-          {product.name}
-        </h3>
+        <Link href={`/product/${product.id}`}>
+          <h3 className="font-heading text-lg font-bold leading-tight tracking-tight text-foreground line-clamp-1 group-hover:text-primary transition-colors cursor-pointer">
+            {product.name}
+          </h3>
+        </Link>
         <p className="text-xl font-bold text-primary mt-1">
           {formattedPrice} <span className="text-xs text-muted-foreground font-medium">/ kg</span>
         </p>

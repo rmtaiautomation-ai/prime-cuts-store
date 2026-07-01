@@ -1,42 +1,17 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, ShoppingCart, DollarSign, Users } from "lucide-react";
-import { supabase } from "@/lib/supabase/client";
+import { getAdminStats } from "@/app/actions/admin";
 
-export default function AdminDashboard() {
-  const [stats, setStats] = useState({
+export const dynamic = 'force-dynamic';
+
+export default async function AdminDashboard() {
+  const result = await getAdminStats();
+  const stats = result.success && result.stats ? result.stats : {
     products: 0,
     orders: 0,
     customers: 0,
     revenue: 0,
-  });
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchStats() {
-      const [
-        { data: products },
-        { data: orders },
-        { data: profiles }
-      ] = await Promise.all([
-        supabase.from('products').select('*'),
-        supabase.from('orders').select('*'),
-        supabase.from('profiles').select('*')
-      ]);
-
-      setStats({
-        products: products?.length || 0,
-        orders: orders?.length || 0,
-        customers: profiles?.length || 0,
-        revenue: orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0,
-      });
-      setIsLoading(false);
-    }
-    
-    fetchStats();
-  }, []);
+  };
 
   return (
     <div className="space-y-6">
@@ -53,7 +28,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">
-              {isLoading ? "..." : `₱${stats.revenue.toLocaleString()}`}
+              ₱{stats.revenue.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">Lifetime revenue</p>
           </CardContent>
@@ -64,7 +39,7 @@ export default function AdminDashboard() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{isLoading ? "..." : stats.orders}</div>
+            <div className="text-2xl font-bold">{stats.orders}</div>
             <p className="text-xs text-muted-foreground">Orders placed</p>
           </CardContent>
         </Card>
@@ -74,7 +49,7 @@ export default function AdminDashboard() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{isLoading ? "..." : stats.products}</div>
+            <div className="text-2xl font-bold">{stats.products}</div>
             <p className="text-xs text-muted-foreground">Catalog items available</p>
           </CardContent>
         </Card>
@@ -84,7 +59,7 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{isLoading ? "..." : stats.customers}</div>
+            <div className="text-2xl font-bold">{stats.customers}</div>
             <p className="text-xs text-muted-foreground">Registered Sukis</p>
           </CardContent>
         </Card>
