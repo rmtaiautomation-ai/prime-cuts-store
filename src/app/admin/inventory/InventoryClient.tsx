@@ -8,11 +8,13 @@ import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { AddProductModal } from "./AddProductModal";
+import { EditProductModal } from "./EditProductModal";
 
 export function InventoryClient({ initialProducts }: { initialProducts: any[] }) {
   const [products, setProducts] = useState(initialProducts);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editStock, setEditStock] = useState<number>(0);
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
 
   const handleEditClick = (product: any) => {
     setEditingId(product.id);
@@ -66,7 +68,9 @@ export function InventoryClient({ initialProducts }: { initialProducts: any[] })
               <TableCell>{product.category}</TableCell>
               <TableCell>₱{Number(product.price).toLocaleString()}</TableCell>
               <TableCell>
-                {product.stock_quantity > 10 ? (
+                {!product.is_active ? (
+                  <Badge variant="outline" className="text-gray-500 bg-gray-500/10">Archived</Badge>
+                ) : product.stock_quantity > 10 ? (
                   <Badge variant="outline" className="text-emerald-500 bg-emerald-500/10">In Stock</Badge>
                 ) : product.stock_quantity > 0 ? (
                   <Badge variant="outline" className="text-amber-500 bg-amber-500/10">Low Stock</Badge>
@@ -95,14 +99,27 @@ export function InventoryClient({ initialProducts }: { initialProducts: any[] })
                     <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>Cancel</Button>
                   </div>
                 ) : (
-                  <Button size="sm" variant="outline" onClick={() => handleEditClick(product)}>Edit</Button>
+                  <div className="flex justify-end gap-2">
+                    <Button size="sm" variant="outline" onClick={() => handleEditClick(product)}>Stock</Button>
+                    <Button size="sm" variant="secondary" onClick={() => setEditingProduct(product)}>Edit</Button>
+                  </div>
                 )}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-    </div>
+      </div>
+
+      <EditProductModal 
+        product={editingProduct} 
+        isOpen={!!editingProduct} 
+        onClose={() => setEditingProduct(null)} 
+        onSuccess={() => {
+          // A full page refresh is needed to see updated details if we don't update local state
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }

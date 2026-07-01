@@ -6,7 +6,10 @@ export const dynamic = 'force-dynamic';
 
 export default async function CustomersPage() {
   const result = await getAdminCustomers();
-  const profiles = result.success ? result.customers : [];
+  const profiles = result.success && result.customers ? result.customers : [];
+  
+  // Sort by lifetime spend descending to highlight VIP customers
+  profiles.sort((a: any, b: any) => Number(b.lifetimeSpend || 0) - Number(a.lifetimeSpend || 0));
 
   return (
     <div className="space-y-6">

@@ -11,6 +11,10 @@ export default async function AdminDashboard() {
     orders: 0,
     customers: 0,
     revenue: 0,
+    thisMonthRevenue: 0,
+    lastMonthRevenue: 0,
+    thisMonthOrders: 0,
+    lastMonthOrders: 0,
   };
 
   return (
@@ -28,9 +32,14 @@ export default async function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">
-              ₱{stats.revenue.toLocaleString()}
+              ₱{stats.thisMonthRevenue.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">Lifetime revenue</p>
+            <p className="text-xs text-muted-foreground">
+              This month (Prev: ₱{stats.lastMonthRevenue.toLocaleString()})
+            </p>
+            <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
+              Lifetime: ₱{stats.revenue.toLocaleString()}
+            </div>
           </CardContent>
         </Card>
         <Card className="border-border">
@@ -39,8 +48,13 @@ export default async function AdminDashboard() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.orders}</div>
-            <p className="text-xs text-muted-foreground">Orders placed</p>
+            <div className="text-2xl font-bold">{stats.thisMonthOrders}</div>
+            <p className="text-xs text-muted-foreground">
+              This month (Prev: {stats.lastMonthOrders})
+            </p>
+            <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
+              Lifetime: {stats.orders} orders
+            </div>
           </CardContent>
         </Card>
         <Card className="border-border">

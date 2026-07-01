@@ -32,6 +32,10 @@ export function CheckoutClient() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
+  const [isEditingAddress, setIsEditingAddress] = useState(true);
+  const [hasDefaultAddress, setHasDefaultAddress] = useState(false);
+  const [formattedSavedAddress, setFormattedSavedAddress] = useState("");
+
   useEffect(() => {
     const fetchProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -51,23 +55,48 @@ export function CheckoutClient() {
             setFirstName(parts[0] || "");
             setLastName(parts.slice(1).join(" ") || "");
           }
-          if (profile.phone) setPhone(profile.phone);
-          if (profile.shipping_address) {
-            // Attempt to parse existing address back into fields
-            const parts = profile.shipping_address.split(", ");
-            if (parts.length >= 3) {
-              setAddress(parts[0]);
-              if (parts.length === 4) {
-                setApartment(parts[1]);
-                setCity(parts[2]);
-                setPostalCode(parts[3]);
-              } else {
-                setCity(parts[1]);
-                setPostalCode(parts[2]);
-              }
+        }
+        
+        let fetchedAddress = profile?.shipping_address;
+        let fetchedPhone = profile?.phone;
+        
+        // If profile doesn't have an address, fallback to their last order
+        if (!fetchedAddress) {
+          const { data: lastOrder } = await supabase
+            .from("orders")
+            .select("shipping_address, customer_phone")
+            .eq("user_id", session.user.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+            
+          if (lastOrder?.shipping_address) {
+            fetchedAddress = lastOrder.shipping_address;
+            if (lastOrder.customer_phone) fetchedPhone = lastOrder.customer_phone;
+          }
+        }
+
+        if (fetchedPhone) setPhone(fetchedPhone);
+
+        if (fetchedAddress) {
+          setHasDefaultAddress(true);
+          setIsEditingAddress(false);
+          setFormattedSavedAddress(fetchedAddress);
+          
+          // Attempt to parse existing address back into fields
+          const parts = fetchedAddress.split(", ");
+          if (parts.length >= 3) {
+            setAddress(parts[0]);
+            if (parts.length === 4) {
+              setApartment(parts[1]);
+              setCity(parts[2]);
+              setPostalCode(parts[3]);
             } else {
-              setAddress(profile.shipping_address);
+              setCity(parts[1]);
+              setPostalCode(parts[2]);
             }
+          } else {
+            setAddress(fetchedAddress);
           }
         }
       }
@@ -170,7 +199,9 @@ export function CheckoutClient() {
           <section className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-900">Contact</h2>
-              <Link href="#" className="text-sm text-blue-600 hover:underline">Log in</Link>
+              {!userId && (
+                <Link href="#" className="text-sm text-blue-600 hover:underline">Log in</Link>
+              )}
             </div>
             <div>
               <Input 
@@ -191,27 +222,60 @@ export function CheckoutClient() {
           {/* Delivery */}
           <section className="space-y-4">
             <h2 className="text-xl font-bold text-gray-900">Delivery</h2>
-            <div className="space-y-3">
-              <select className="w-full h-12 border border-gray-300 rounded-md px-3 text-gray-700 bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none">
-                <option>Philippines</option>
-              </select>
-              <div className="grid grid-cols-2 gap-3">
-                <Input placeholder="First name" required value={firstName} onChange={e => setFirstName(e.target.value)} className="h-12 border-gray-300 rounded-md" />
-                <Input placeholder="Last name" required value={lastName} onChange={e => setLastName(e.target.value)} className="h-12 border-gray-300 rounded-md" />
+            
+            {!isEditingAddress && hasDefaultAddress ? (
+              <div className="border border-gray-300 rounded-md p-4 bg-gray-50 flex justify-between items-start">
+                <div>
+                  <p className="font-semibold text-gray-900">{firstName} {lastName}</p>
+                  <p className="text-gray-700 mt-1">{formattedSavedAddress}</p>
+                  <p className="text-gray-600 mt-1">{phone}</p>
+                </div>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setIsEditingAddress(true)}
+                  className="shrink-0 bg-white"
+                >
+                  Edit address
+                </Button>
               </div>
-              <Input placeholder="Address" required value={address} onChange={e => setAddress(e.target.value)} className="h-12 border-gray-300 rounded-md" />
-              <Input placeholder="Apartment, suite, etc. (optional)" value={apartment} onChange={e => setApartment(e.target.value)} className="h-12 border-gray-300 rounded-md" />
-              <div className="grid grid-cols-2 gap-3">
-                <Input placeholder="Postal code" required value={postalCode} onChange={e => setPostalCode(e.target.value)} className="h-12 border-gray-300 rounded-md" />
-                <Input placeholder="City" required value={city} onChange={e => setCity(e.target.value)} className="h-12 border-gray-300 rounded-md" />
+            ) : (
+              <div className="space-y-3">
+                <select className="w-full h-12 border border-gray-300 rounded-md px-3 text-gray-700 bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none">
+                  <option>Philippines</option>
+                </select>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input placeholder="First name" required value={firstName} onChange={e => setFirstName(e.target.value)} className="h-12 border-gray-300 rounded-md" />
+                  <Input placeholder="Last name" required value={lastName} onChange={e => setLastName(e.target.value)} className="h-12 border-gray-300 rounded-md" />
+                </div>
+                <Input placeholder="Address" required value={address} onChange={e => setAddress(e.target.value)} className="h-12 border-gray-300 rounded-md" />
+                <Input placeholder="Apartment, suite, etc. (optional)" value={apartment} onChange={e => setApartment(e.target.value)} className="h-12 border-gray-300 rounded-md" />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input placeholder="Postal code" required value={postalCode} onChange={e => setPostalCode(e.target.value)} className="h-12 border-gray-300 rounded-md" />
+                  <Input placeholder="City" required value={city} onChange={e => setCity(e.target.value)} className="h-12 border-gray-300 rounded-md" />
+                </div>
+                <select className="w-full h-12 border border-gray-300 rounded-md px-3 text-gray-700 bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none">
+                  <option>Metro Manila</option>
+                  <option>Cebu</option>
+                  <option>Davao</option>
+                </select>
+                <Input placeholder="Phone" type="tel" required value={phone} onChange={e => setPhone(e.target.value)} className="h-12 border-gray-300 rounded-md" />
+                
+                {hasDefaultAddress && (
+                  <div className="pt-2">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      onClick={() => setIsEditingAddress(false)}
+                      className="text-blue-600 p-0 h-auto hover:bg-transparent hover:underline"
+                    >
+                      Cancel and use saved address
+                    </Button>
+                  </div>
+                )}
               </div>
-              <select className="w-full h-12 border border-gray-300 rounded-md px-3 text-gray-700 bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none">
-                <option>Metro Manila</option>
-                <option>Cebu</option>
-                <option>Davao</option>
-              </select>
-              <Input placeholder="Phone" type="tel" required value={phone} onChange={e => setPhone(e.target.value)} className="h-12 border-gray-300 rounded-md" />
-            </div>
+            )}
           </section>
 
           {/* Payment */}
