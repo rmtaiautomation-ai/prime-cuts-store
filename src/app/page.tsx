@@ -6,6 +6,8 @@ import { MOCK_PRODUCTS } from "@/lib/mock-data";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { supabase } from "@/lib/supabase/client";
 import { Suspense } from "react";
+import { FadeIn } from "@/components/animations/FadeIn";
+import { ProductGridSkeleton } from "@/components/ProductGridSkeleton";
 
 export const dynamic = 'force-dynamic';
 
@@ -64,44 +66,51 @@ export default async function Home() {
       {/* Featured Products Section */}
       <section id="products" className="bg-background py-12 md:py-20">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-6 border-b border-border pb-4">
-            <div className="space-y-1">
-              <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-foreground">Shop by Category</h2>
+          <FadeIn direction="up">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-6 border-b border-border pb-4">
+              <div className="space-y-1">
+                <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-foreground">Shop by Category</h2>
+              </div>
+              <Button variant="outline" className="hidden md:flex border-border hover:border-primary/50 text-foreground group transition-all">
+                View All Categories
+                <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
             </div>
-            <Button variant="outline" className="hidden md:flex border-border hover:border-primary/50 text-foreground group transition-all">
-              View All Categories
-              <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
-          <Suspense fallback={<div className="h-64 flex items-center justify-center">Loading products...</div>}>
+          </FadeIn>
+          <Suspense fallback={<ProductGridSkeleton />}>
             <ProductGrid products={products} />
           </Suspense>
         </div>
       </section>
 
       {/* Why Choose Us Section */}
-      <section className="bg-background py-16 md:py-24 border-t border-border">
+      <section className="bg-background py-16 md:py-24 border-t border-border overflow-hidden">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="mb-10">
-            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">Why PrimeCuts PH</h3>
-            <h2 className="text-3xl md:text-4xl font-black text-[#111827] uppercase tracking-tight">Fast, Reliable, and Wallet-Friendly</h2>
-          </div>
+          <FadeIn direction="up">
+            <div className="mb-10">
+              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">Why PrimeCuts PH</h3>
+              <h2 className="text-3xl md:text-4xl font-black text-[#111827] uppercase tracking-tight">Fast, Reliable, and Wallet-Friendly</h2>
+            </div>
+          </FadeIn>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="border border-border/50 shadow-sm hover:shadow-md transition-all">
-              <CardContent className="p-6 flex items-start gap-4">
-                <div className="bg-[#111827] rounded-full p-3 flex-shrink-0 text-white">
-                  <Truck className="w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-[#111827] uppercase text-sm mb-2"><span className="bg-yellow-400 text-[#111827] px-2 py-1 rounded-sm">Same Day Delivery</span></h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">Get your order when you need it—swift, reliable, and hassle-free</p>
-                </div>
-              </CardContent>
-            </Card>
+            <FadeIn delay={0.1}>
+              <Card className="border border-border/50 shadow-sm hover:shadow-md transition-all h-full">
+                <CardContent className="p-6 flex items-start gap-4">
+                  <div className="bg-[#111827] rounded-full p-3 flex-shrink-0 text-white">
+                    <Truck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[#111827] uppercase text-sm mb-2"><span className="bg-yellow-400 text-[#111827] px-2 py-1 rounded-sm">Same Day Delivery</span></h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">Get your order when you need it—swift, reliable, and hassle-free</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </FadeIn>
 
-            <Card className="border border-border/50 shadow-sm hover:shadow-md transition-all">
-              <CardContent className="p-6 flex items-start gap-4">
+            <FadeIn delay={0.2}>
+              <Card className="border border-border/50 shadow-sm hover:shadow-md transition-all h-full">
+                <CardContent className="p-6 flex items-start gap-4">
                 <div className="bg-[#111827] rounded-full p-3 flex-shrink-0 text-white">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
@@ -111,8 +120,10 @@ export default async function Home() {
                 </div>
               </CardContent>
             </Card>
+            </FadeIn>
 
-            <Card className="border border-border/50 shadow-sm hover:shadow-md transition-all">
+            <FadeIn delay={0.3}>
+            <Card className="border border-border/50 shadow-sm hover:shadow-md transition-all h-full">
               <CardContent className="p-6 flex items-start gap-4">
                 <div className="bg-[#111827] rounded-full p-3 flex-shrink-0 text-white">
                   <Building2 className="w-6 h-6" />
@@ -123,8 +134,10 @@ export default async function Home() {
                 </div>
               </CardContent>
             </Card>
+            </FadeIn>
 
-            <Card className="border border-border/50 shadow-sm hover:shadow-md transition-all">
+            <FadeIn delay={0.4}>
+            <Card className="border border-border/50 shadow-sm hover:shadow-md transition-all h-full">
               <CardContent className="p-6 flex items-start gap-4">
                 <div className="bg-[#111827] rounded-full p-3 flex-shrink-0 text-white">
                   <ThumbsUp className="w-6 h-6" />
@@ -135,8 +148,10 @@ export default async function Home() {
                 </div>
               </CardContent>
             </Card>
+            </FadeIn>
 
-            <Card className="border border-border/50 shadow-sm hover:shadow-md transition-all">
+            <FadeIn delay={0.5}>
+            <Card className="border border-border/50 shadow-sm hover:shadow-md transition-all h-full">
               <CardContent className="p-6 flex items-start gap-4">
                 <div className="bg-[#111827] rounded-full p-3 flex-shrink-0 text-white">
                   <CreditCard className="w-6 h-6" />
@@ -147,8 +162,10 @@ export default async function Home() {
                 </div>
               </CardContent>
             </Card>
+            </FadeIn>
 
-            <Card className="border border-border/50 shadow-sm hover:shadow-md transition-all">
+            <FadeIn delay={0.6}>
+            <Card className="border border-border/50 shadow-sm hover:shadow-md transition-all h-full">
               <CardContent className="p-6 flex items-start gap-4">
                 <div className="bg-[#111827] rounded-full p-3 flex-shrink-0 text-white">
                   <Users className="w-6 h-6" />
@@ -159,6 +176,7 @@ export default async function Home() {
                 </div>
               </CardContent>
             </Card>
+            </FadeIn>
           </div>
         </div>
       </section>
