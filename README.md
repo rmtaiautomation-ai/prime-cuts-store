@@ -18,10 +18,13 @@ Most boutique food suppliers rely on manual, error-prone processes: taking order
 - **Auto-Restocking:** If an admin cancels or refunds an order, the exact items are mathematically restocked into the database automatically.
 - **Low-Stock Alerts:** When a popular item's stock drops below a critical threshold (e.g., 5 items left), the system instantly emails the administrator to restock.
 
-### 🛡️ Enterprise-Grade Security
+### 🛡️ Enterprise-Grade Security & Authentication
+- **Row Level Security (RLS):** Powered by Supabase, database tables are locked down at the row level. Data can only be read or modified by strictly authorized server actions, preventing unauthorized API queries.
+- **Robust Authentication Flows:** Implements secure Supabase Auth with dedicated callback routes (`/auth/callback`) to handle magic links, OAuth, and session persistence smoothly across the application.
+- **Comprehensive Error Handling:** Graceful error boundary catchers and route handlers ensure that any authentication failures or API timeouts never crash the app, but instead guide the user safely back to a stable state.
 - **Anti-Spam Checkout:** Protects the business from malicious bots and competitors by strictly rate-limiting checkouts (1 order per minute per email).
 - **Data Sanitization:** All customer inputs are aggressively sanitized before entering the database to prevent HTML/Email Injection attacks.
-- **Secure Admin Portal:** The dashboard is protected by strict Role-Based Access Control (RBAC). Only verified `is_admin = true` accounts can access financial and order data.
+- **Secure Admin Portal:** The dashboard is protected by strict Role-Based Access Control (RBAC). Only verified `is_admin = true` accounts can bypass the middleware to access financial and order data.
 
 ### 📧 Automated Customer Experience
 - **Branded Order IDs:** Generates highly professional, readable order numbers (e.g., `ORD-9B1DEB4D`) for receipts and customer support.
