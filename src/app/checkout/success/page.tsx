@@ -9,12 +9,33 @@ export const metadata = {
 };
 
 // We use searchParams in a server component to get the order ID
+import { PostCheckoutSignup } from "./PostCheckoutSignup";
+import { createClient } from "@/lib/supabase/server";
+
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const { order_id } = await searchParams;
+  const supabase = createClient();
+  
+  // 1. Check if user is logged in
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  // 2. Fetch order details to get the email (only if not logged in)
+  let orderEmail = "";
+  if (!user && order_id) {
+    const { data: orderData } = await supabase
+      .from("orders")
+      .select("customer_email")
+      .eq("id", order_id as string)
+      .single();
+      
+    if (orderData) {
+      orderEmail = orderData.customer_email;
+    }
+  }
   
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -79,14 +100,19 @@ export default async function CheckoutSuccessPage({
           </div>
 
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button render={<Link href="/" />} className="h-12 px-8 bg-[#001a41] hover:bg-[#002a66] text-white font-bold rounded-md">
-                Continue Shopping
+            <Button asChild className="h-12 px-8 bg-[#001a41] hover:bg-[#002a66] text-white font-bold rounded-md">
+                <Link href="/">Continue Shopping</Link>
             </Button>
-            <Button render={<Link href="/account" />} variant="outline" className="h-12 px-8 border-gray-300 text-gray-700 font-bold rounded-md hover:bg-gray-50">
-                View Order History
+            <Button asChild variant="outline" className="h-12 px-8 border-gray-300 text-gray-700 font-bold rounded-md hover:bg-gray-50">
+                <Link href="/account">View Order History</Link>
             </Button>
           </div>
           
+          {/* Post-Checkout Account Creation for Guests */}
+          {!user && orderEmail && (
+            <PostCheckoutSignup orderEmail={orderEmail} />
+          )}
+
         </div>
       </main>
     </div>
