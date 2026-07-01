@@ -10,9 +10,10 @@ import { useRouter } from "next/navigation";
 
 interface PostCheckoutSignupProps {
   orderEmail: string;
+  orderName: string;
 }
 
-export function PostCheckoutSignup({ orderEmail }: PostCheckoutSignupProps) {
+export function PostCheckoutSignup({ orderEmail, orderName }: PostCheckoutSignupProps) {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -30,6 +31,11 @@ export function PostCheckoutSignup({ orderEmail }: PostCheckoutSignupProps) {
       const { data, error } = await supabase.auth.signUp({
         email: orderEmail,
         password: password,
+        options: {
+          data: {
+            full_name: orderName,
+          }
+        }
       });
 
       if (error) throw error;

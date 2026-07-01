@@ -25,15 +25,17 @@ export default async function CheckoutSuccessPage({
   
   // 2. Fetch order details to get the email (only if not logged in)
   let orderEmail = "";
+  let orderName = "";
   if (!user && order_id) {
     const { data: orderData } = await supabase
       .from("orders")
-      .select("customer_email")
+      .select("customer_email, customer_name")
       .eq("id", order_id as string)
       .single();
       
     if (orderData) {
       orderEmail = orderData.customer_email;
+      orderName = orderData.customer_name;
     }
   }
   
@@ -110,7 +112,7 @@ export default async function CheckoutSuccessPage({
           
           {/* Post-Checkout Account Creation for Guests */}
           {!user && orderEmail && (
-            <PostCheckoutSignup orderEmail={orderEmail} />
+            <PostCheckoutSignup orderEmail={orderEmail} orderName={orderName} />
           )}
 
         </div>
