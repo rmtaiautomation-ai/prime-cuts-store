@@ -18,7 +18,7 @@ export default async function CheckoutSuccessPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const { order_id } = await searchParams;
-  const supabase = createClient();
+  const supabase = await createClient();
   
   // 1. Check if user is logged in
   const { data: { user } } = await supabase.auth.getUser();
