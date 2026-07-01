@@ -132,9 +132,9 @@ export function CheckoutClient() {
       toast.success("Order placed successfully!");
       clearCart();
       router.push(`/checkout/success?order_id=${result.orderId}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error placing order:", error);
-      toast.error("There was a problem placing your order. Please try again.");
+      toast.error(error.message || "There was a problem placing your order. Please try again.");
     } finally {
       setIsProcessing(false);
     }
